@@ -1,5 +1,6 @@
 
 process.year_json <- function(min_year = 1890, max_year = 2019){
+  source('scripts/visualize/visualize-map.R')
   library(dplyr)
   sites <- readRDS('cache/site-map.rds')
   sites.w.data <- readr::read_csv('cache/allSitesYears.csv', col_types = c('cdcccddccdccdddddd'))
