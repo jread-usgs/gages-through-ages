@@ -54,9 +54,9 @@ process.state_map <- function(viz){
   saveRDS(states.out, file = viz[['location']])
 }
 
-process.site_map <- function(viz){
+process.site_map <- function(...){
   library(dplyr)
-  sites <- readData(viz[['depends']]) %>% filter(!is.na(dec_lat_va))
+  sites <- readRDS('cache/disch-sites.rds') %>% filter(!is.na(dec_lat_va))
   huc.map <- c(AK = "19", HI = "20", PR = "21")
   
   #parse huc_cd to 2 digits, and rename to huc to stay consistent
@@ -72,7 +72,7 @@ process.site_map <- function(viz){
                                 shifts[[region]]))
     sites.out <- rbind(sites.out, sites.tmp)
   }
-  saveRDS(sites.out, file = viz[['location']])
+  saveRDS(sites.out, file = 'cache/site-map.rds')
 }
 
 library(rgeos)
