@@ -1,10 +1,10 @@
-process.bar_chart <- function(viz){
-  data.in <- readDepends(viz)
-  size <- size_map_svg(data.in[['state-map']])
-  sites <- data.in$`disch-data`
+process.bar_chart <- function(min_year = 1890, max_year = 2019){
+  source('scripts/visualize/visualize-map.R')
+  size <- size_map_svg(readRDS('cache/state-map.rds'))
+  sites <- read.csv('cache/allSitesYears.csv')
   library(dplyr)
   
-  bars <- filter(sites, year >= viz[['min-year']], year <= viz[['max-year']]) %>% 
+  bars <- filter(sites, year >= min_year, year <= max_year) %>% 
     select(site_no, year) %>% distinct %>% 
     group_by(year) %>% tally %>% data.frame
   
@@ -36,6 +36,6 @@ process.bar_chart <- function(viz){
                   onmouseover = sprintf("vizlab.pause('%s')", bars$year[i]),
                   onmouseout = sprintf("hovertext('');vizlab.play()", bars$year[i]))
   }
-  write_xml(x = root, file = viz[['location']])
+  write_xml(x = root, file = 'cache/bar-data.xml')
   
 }

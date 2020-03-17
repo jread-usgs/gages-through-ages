@@ -22,12 +22,11 @@ visualize.map_thumbnail <- function(viz){
   dev.off()
 }
 
-visualize.states_svg <- function(viz){
-  data <- readDepends(viz)
-  states <- data[['state-map']]
-  sites <- data[['site-map']]
-  watermark <- data[['watermark']]
-  bars <- data[['bar-data']]
+visualize.states_svg <- function(...){
+  states <- readRDS('cache/state-map.rds')
+  sites <- readRDS('cache/site-map.rds')
+  watermark <- readRDS('cache/watermark.rds')
+  bars <- 'cache/bar-data.xml'
   state.name <- as.character(row.names(states)[states@plotOrder])
   site.num <- sites$site_no # note that points sp objects don't have `plotOrder`, so we need to verify this
   
@@ -41,7 +40,8 @@ visualize.states_svg <- function(viz){
   }, width = size[1], height = size[2])
   
   library(xml2)
-  svg <- clean_up_svg(svg, viz)
+  svg <- clean_up_svg(svg, id = 'map-svg', 
+                      title = "U.S. Geological Survey Active Stream Gages", desc = "Map of U.S. Geological Survey gages")
   vb.num <- as.numeric(strsplit(xml_attr(svg, 'viewBox'),'[ ]')[[1]])
   p <- xml_find_all(svg, '//*[local-name()="path"]')
   c <- xml_find_all(svg, '//*[local-name()="circle"]')
@@ -92,7 +92,7 @@ visualize.states_svg <- function(viz){
   bars.xml <- read_xml(bars)
   
   svg <- add_bar_chart(svg, bars.xml)
-  write_xml(svg, viz[['location']])
+  write_xml(svg, 'figures/states_map.svg')
   
 }
 
@@ -164,17 +164,17 @@ add_bar_chart <- function(svg, bars){
 #' @param viz the vizlab object
 #' 
 #' @return a modified version of svg
-clean_up_svg <- function(svg, viz){
+clean_up_svg <- function(svg, desc, title, id){
   # let this thing scale:
   xml_attr(svg, "preserveAspectRatio") <- "xMidYMid meet"
   xml_attr(svg, "xmlns") <- 'http://www.w3.org/2000/svg'
   xml_attr(svg, "xmlns:xlink") <- 'http://www.w3.org/1999/xlink'
-  xml_attr(svg, "id") <- viz[["id"]]
+  xml_attr(svg, "id") <- id # viz[["id"]]
   
   r <- xml_find_all(svg, '//*[local-name()="rect"]')
   
-  xml_add_sibling(xml_children(svg)[[1]], 'desc', .where='before', viz[["alttext"]])
-  xml_add_sibling(xml_children(svg)[[1]], 'title', .where='before', viz[["title"]])
+  xml_add_sibling(xml_children(svg)[[1]], 'desc', .where='before', desc) # viz[["alttext"]])
+  xml_add_sibling(xml_children(svg)[[1]], 'title', .where='before', title) # viz[["title"]])
   
   defs <- xml_find_all(svg, '//*[local-name()="defs"]')
   # !!---- use these lines when we have css for the svg ---!!
